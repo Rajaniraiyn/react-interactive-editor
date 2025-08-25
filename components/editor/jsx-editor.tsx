@@ -19,7 +19,11 @@ import type { Node } from "estree-jsx";
 import { EDIT_MARKER } from "@/lib/jsx-ast/constants";
 import { astToCode, codeWithNodeMapping } from "@/lib/jsx-ast/parse";
 import { canEditText, getText, setText } from "@/lib/jsx-ast/text";
-import { getStyleEntries, getStyleValue, setStyleValue } from "@/lib/jsx-ast/style";
+import {
+  getStyleEntries,
+  getStyleValue,
+  setStyleValue,
+} from "@/lib/jsx-ast/style";
 
 interface JsxEditorProps {
   code: string;
@@ -28,7 +32,11 @@ interface JsxEditorProps {
 export function JsxEditor({ code: initialCode }: JsxEditorProps) {
   const [code, setCode] = useState(initialCode);
 
-  const { code: processedCode, nodeMap, ast } = useMemo(() => codeWithNodeMapping(code), [code]);
+  const {
+    code: processedCode,
+    nodeMap,
+    ast,
+  } = useMemo(() => codeWithNodeMapping(code), [code]);
   const editableRegionRef = useRef<HTMLDivElement>(null);
 
   const [pickedElement, setPickedElement] = useState<HTMLElement | null>(null);
@@ -43,7 +51,8 @@ export function JsxEditor({ code: initialCode }: JsxEditorProps) {
   return (
     <>
       <SidebarProvider defaultOpen={false}>
-        <div ref={editableRegionRef}>
+        <div ref={editableRegionRef} className="relative isolate h-full w-full">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,theme(colors.muted.DEFAULT)_0%,transparent_60%)]" />
           <JsxParser jsx={processedCode} />
         </div>
         <EditorPanel
@@ -81,25 +90,36 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
 
   return (
     <Sidebar side="right" variant="inset">
-      <SidebarHeader>Editor</SidebarHeader>
+      <SidebarHeader>
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <span className="text-sm font-medium text-muted-foreground">
+            Editor
+          </span>
+        </div>
+      </SidebarHeader>
       <SidebarSeparator />
       {node && (
-        <SidebarContent>
+        <SidebarContent className="p-3 space-y-3">
           {canEditText(node) && (
-            <div>
-              <h3>Text</h3>
+            <div className="space-y-1.5">
+              <h3 className="text-xs font-medium text-muted-foreground">
+                Text
+              </h3>
               <Textarea
                 value={getText(node)}
                 onChange={(e) => {
                   setText(node, e.target.value);
                   onMutate?.();
                 }}
+                className="min-h-24"
               />
             </div>
           )}
           <div className="grid gap-3">
             <div className="grid gap-1.5">
-              <h3 className="text-sm font-medium">Background Color</h3>
+              <h3 className="text-xs font-medium text-muted-foreground">
+                Background
+              </h3>
               <Input
                 type="color"
                 value={getStyleValue(node, "backgroundColor") ?? "#000000"}
@@ -110,7 +130,9 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
               />
             </div>
             <div className="grid gap-1.5">
-              <h3 className="text-sm font-medium">Text Color</h3>
+              <h3 className="text-xs font-medium text-muted-foreground">
+                Text Color
+              </h3>
               <Input
                 type="color"
                 value={getStyleValue(node, "color") ?? "#000000"}
@@ -121,7 +143,9 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
               />
             </div>
             <div className="grid gap-1.5">
-              <h3 className="text-sm font-medium">Padding</h3>
+              <h3 className="text-xs font-medium text-muted-foreground">
+                Padding
+              </h3>
               <Input
                 placeholder="e.g. 1rem, 16px"
                 value={getStyleValue(node, "padding") ?? ""}
@@ -132,7 +156,9 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
               />
             </div>
             <div className="grid gap-1.5">
-              <h3 className="text-sm font-medium">Margin</h3>
+              <h3 className="text-xs font-medium text-muted-foreground">
+                Margin
+              </h3>
               <Input
                 placeholder="e.g. 1rem, 16px"
                 value={getStyleValue(node, "margin") ?? ""}
@@ -143,7 +169,9 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
               />
             </div>
             <div className="grid gap-2">
-              <h3 className="text-sm font-medium">Other styles</h3>
+              <h3 className="text-xs font-medium text-muted-foreground">
+                Other styles
+              </h3>
               <div className="grid gap-2">
                 {getStyleEntries(node).map(([k, v]) => (
                   <div key={k} className="grid grid-cols-2 gap-2 items-center">
@@ -172,6 +200,7 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
                     onChange={(e) => setNewStyleValue(e.target.value)}
                   />
                   <Button
+                    variant="outline"
                     onClick={() => {
                       if (!newStyleKey) return;
                       setStyleValue(node, newStyleKey, newStyleValue || null);
@@ -189,9 +218,11 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
         </SidebarContent>
       )}
       <SidebarSeparator />
-      <SidebarFooter>Footer</SidebarFooter>
+      <SidebarFooter>
+        <div className="w-full px-2 py-1 text-[11px] text-muted-foreground">
+          Tip: Press Esc to cancel picking
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }
-
-

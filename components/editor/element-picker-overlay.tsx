@@ -5,6 +5,7 @@ import { EditIcon } from "lucide-react";
 import { RefObject, useDeferredValue, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface ElementPickerOverlayProps {
   containerRef: RefObject<HTMLElement | null>;
@@ -12,12 +13,18 @@ interface ElementPickerOverlayProps {
   canPick?: (element: HTMLElement) => boolean;
 }
 
-const PREVIEW_PADDING = 6;
+const PREVIEW_PADDING = 4;
 
-export function ElementPickerOverlay({ containerRef, onPick, canPick }: ElementPickerOverlayProps) {
+export function ElementPickerOverlay({
+  containerRef,
+  onPick,
+  canPick,
+}: ElementPickerOverlayProps) {
   const [status, setStatus] = useState<"idle" | "picking" | "picked">("idle");
 
-  const [interestElement, setInterestElement] = useState<HTMLElement | null>(null);
+  const [interestElement, setInterestElement] = useState<HTMLElement | null>(
+    null,
+  );
   const [previewBound, setPreviewBound] = useState<DOMRect | null>(null);
   const deferredPreviewBound = useDeferredValue(previewBound);
 
@@ -27,11 +34,15 @@ export function ElementPickerOverlay({ containerRef, onPick, canPick }: ElementP
       return;
     }
 
-    setPreviewBound(padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING));
+    setPreviewBound(
+      padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
+    );
 
     const resizeObserver = new ResizeObserver(() => {
       // TODO: this is causing a weird issue will fix up bit latter
-      setPreviewBound(padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING));
+      setPreviewBound(
+        padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
+      );
     });
 
     resizeObserver.observe(interestElement);
@@ -47,10 +58,20 @@ export function ElementPickerOverlay({ containerRef, onPick, canPick }: ElementP
 
     const controller = new AbortController();
 
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setStatus("idle");
+        setInterestElement(null);
+      }
+    };
+
     target.addEventListener(
       "mousemove",
       (event) => {
-        const elementAtMouse = document.elementFromPoint(event.clientX, event.clientY);
+        const elementAtMouse = document.elementFromPoint(
+          event.clientX,
+          event.clientY,
+        );
         if (elementAtMouse instanceof HTMLElement) {
           if (canPick?.(elementAtMouse) === false) {
             return;
@@ -64,7 +85,10 @@ export function ElementPickerOverlay({ containerRef, onPick, canPick }: ElementP
     target.addEventListener(
       "mousedown",
       (event) => {
-        const elementAtMouse = document.elementFromPoint(event.clientX, event.clientY);
+        const elementAtMouse = document.elementFromPoint(
+          event.clientX,
+          event.clientY,
+        );
         if (elementAtMouse instanceof HTMLElement) {
           if (canPick?.(elementAtMouse) === false) {
             return;
@@ -72,10 +96,16 @@ export function ElementPickerOverlay({ containerRef, onPick, canPick }: ElementP
           setInterestElement(elementAtMouse);
           setStatus("picked");
           onPick?.(elementAtMouse);
+          // brief visual confirmation before exiting pick mode
+          setTimeout(() => setStatus("idle"), 120);
         }
       },
       { passive: true, signal: controller.signal },
     );
+
+    window.addEventListener("keydown", onKeyDown, {
+      signal: controller.signal,
+    });
 
     return () => controller.abort();
   }, [status, containerRef]);
@@ -84,31 +114,34 @@ export function ElementPickerOverlay({ containerRef, onPick, canPick }: ElementP
 
   return createPortal(
     <>
-      <Button
-        hidden={status === "picking"}
-        size="icon"
-        className="absolute bottom-4 right-4 rounded-full z-50"
-        onClick={() => {
-          setInterestElement(null);
-          setStatus("picking");
-        }}
-      >
-        <EditIcon />
-        <span className="sr-only">Edit</span>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            aria-pressed={status === "picking"}
+            hidden={status === "picking"}
+            size="icon"
+            variant="outline"
+            className="fixed bottom-4 right-4 z-50 rounded-full shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/70"
+            onClick={() => {
+              setInterestElement(null);
+              setStatus("picking");
+            }}
+          >
+            <EditIcon className="transition-transform duration-150 ease-out group-aria-pressed:rotate-12" />
+            <span className="sr-only">Pick element to edit</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Pick element</TooltipContent>
+      </Tooltip>
       {status === "picking" && (
         <style>
-          {`:is(*, ::before, ::after) {
-                cursor: crosshair !important;
-            }`}
+          {`:is(*, ::before, ::after) { cursor: crosshair !important; }`}
         </style>
       )}
       <div
         hidden={deferredPreviewBound === null || status === "idle"}
         className={cn(
-          "pointer-events-none rounded-sm border absolute top-0 left-0 transition-[transform,width,height] duration-100",
-          status === "picked" && "border-cyan-400",
-          status === "picking" && "bg-cyan-400/25 border-dashed border-black",
+          "pointer-events-none absolute top-0 left-0 rounded-md ring-2 ring-primary/40 bg-primary/10 transition-[transform,width,height] duration-150 ease-out",
         )}
         style={{
           width: deferredPreviewBound?.width,
@@ -130,5 +163,3 @@ function padDomRect(rect: DOMRect, padding: number): DOMRect {
     top: rect.top - padding,
   });
 }
-
-

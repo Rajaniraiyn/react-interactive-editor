@@ -1,11 +1,11 @@
 "use client";
 
-import { InteractiveEditor } from "@/components/interactive-editor";
+import { JsxEditor } from "@/components/editor/jsx-editor";
 
 export default function Home() {
   return (
     <div className="w-screen h-screen">
-      <InteractiveEditor code={EXAMPLE_REACT_CODE} />
+      <JsxEditor code={EXAMPLE_REACT_CODE} />
     </div>
   );
 }

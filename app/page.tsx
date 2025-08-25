@@ -10,6 +10,7 @@ export default function Home() {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const submit = useCallback(
     async (code: string) => {
@@ -78,6 +79,19 @@ export default function Home() {
           >
             {submitting ? "Creating…" : "Preview"}
           </Button>
+          <Button
+            variant="ghost"
+            disabled={!value}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(value);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1000);
+              } catch {}
+            }}
+          >
+            {copied ? "Copied" : "Copy code"}
+          </Button>
         </div>
       </div>
     </div>
@@ -92,7 +106,7 @@ const TEMPLATES: { key: string; label: string; code: string }[] = [
 <div style={{ fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
   <header style={{ position: "sticky", top: 0, backdropFilter: "blur(8px)", backgroundColor: "rgba(255,255,255,0.7)", borderBottom: "1px solid #e5e7eb", padding: "0.75rem 1rem" }}>
     <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1100px", margin: "0 auto" }}>
-      <div style={{ fontWeight: 600 }}>Runable</div>
+      <div style={{ fontWeight: 600 }}>JSX Studio</div>
       <ul style={{ display: "flex", gap: "1rem", listStyle: "none", margin: 0, padding: 0 }}>
         <li><a href="#features" style={{ textDecoration: "none", color: "#111827" }}>Features</a></li>
         <li><a href="#pricing" style={{ textDecoration: "none", color: "#111827" }}>Pricing</a></li>
@@ -182,7 +196,7 @@ const TEMPLATES: { key: string; label: string; code: string }[] = [
     </section>
   </main>
   <footer style={{ padding: "2rem 1rem", borderTop: "1px solid #e5e7eb", color: "#475569", textAlign: "center" }}>
-    <div style={{ maxWidth: "1100px", margin: "0 auto" }}>© 2025 Runable. All rights reserved.</div>
+    <div style={{ maxWidth: "1100px", margin: "0 auto" }}>© 2025 JSX Studio. All rights reserved.</div>
   </footer>
 </div>
 `.trim(),

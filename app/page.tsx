@@ -62,7 +62,7 @@ export default function Home() {
               await submit(pasted);
             }
           }}
-          placeholder="Paste your React JSX here to start…"
+          placeholder={PLACEHOLDER}
           className="min-h-64"
         />
         <div className="flex items-center justify-end gap-2">
@@ -241,3 +241,8 @@ const TEMPLATES: { key: string; label: string; code: string }[] = [
 `.trim(),
   },
 ];
+
+const PLACEHOLDER = `<div style={{ padding: "1rem", backgroundColor: "#f8fafc" }}>
+  <h1 style={{ color: "#111827", margin: 0 }}>Hello JSX</h1>
+  <p style={{ color: "#475569", marginTop: ".5rem" }}>Paste JSX here or pick a preset above.</p>
+</div>`;

@@ -1,50 +1,27 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { Redis } from "@upstash/redis";
 
-const STORE_PATH = path.join(process.cwd(), ".components.json");
-
-type ComponentMap = Record<string, string>;
-
-async function readStore(): Promise<ComponentMap> {
-  try {
-    const data = await fs.readFile(STORE_PATH, "utf8");
-    return JSON.parse(data) as ComponentMap;
-  } catch (error: any) {
-    if (error && error.code === "ENOENT") {
-      return {};
-    }
-    throw error;
-  }
-}
-
-async function writeStore(map: ComponentMap): Promise<void> {
-  const data = JSON.stringify(map, null, 2);
-  await fs.writeFile(STORE_PATH, data, "utf8");
-}
+const redis = Redis.fromEnv();
+const KEY_PREFIX = "component:";
 
 export async function createComponent(value: string): Promise<string> {
   const id = randomUUID();
-  const map = await readStore();
-  map[id] = value;
-  await writeStore(map);
+  await redis.set(KEY_PREFIX + id, value);
   return id;
 }
 
 export async function getComponent(id: string): Promise<string | undefined> {
-  const map = await readStore();
-  return map[id];
+  const value = await redis.get<string>(KEY_PREFIX + id);
+  return value ?? undefined;
 }
 
 export async function updateComponent(
   id: string,
   value: string,
 ): Promise<boolean> {
-  const map = await readStore();
-  if (!(id in map)) {
-    return false;
-  }
-  map[id] = value;
-  await writeStore(map);
+  const key = KEY_PREFIX + id;
+  const exists = (await redis.exists(key)) === 1;
+  if (!exists) return false;
+  await redis.set(key, value);
   return true;
 }

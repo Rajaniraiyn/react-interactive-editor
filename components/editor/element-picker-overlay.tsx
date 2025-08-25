@@ -40,9 +40,11 @@ export function ElementPickerOverlay({
 
     const resizeObserver = new ResizeObserver(() => {
       // TODO: this is causing a weird issue will fix up bit latter. the issue is for unknown reasons the bounds being all zero. i.e. w=h=left=top=0
-      // setPreviewBound(
-      //   padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
-      // );
+      // requestAnimationFrame(() => {
+      //   setPreviewBound(
+      //     padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
+      //   );
+      // });
     });
 
     resizeObserver.observe(interestElement);
@@ -141,7 +143,7 @@ export function ElementPickerOverlay({
       <div
         hidden={deferredPreviewBound === null}
         className={cn(
-          "pointer-events-none absolute top-0 left-0 rounded-md ring-2 ring-primary/40 bg-primary/10 transition-[transform,width,height] duration-150 ease-out",
+          "pointer-events-none absolute top-0 left-0 rounded-md z-50 ring-2 ring-primary/40 bg-primary/10 transition-[transform,width,height] duration-150 ease-out",
         )}
         style={{
           width: deferredPreviewBound?.width,

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import JsxParser from "react-jsx-parser";
-import { ElementPickerOverlay } from "./element-picker-overlay";
+import { ElementPickerOverlay } from "@/components/editor/element-picker-overlay";
 import {
   Sidebar,
   SidebarContent,
@@ -27,9 +27,10 @@ import {
 
 interface JsxEditorProps {
   code: string;
+  onChange?: (code: string) => void;
 }
 
-export function JsxEditor({ code: initialCode }: JsxEditorProps) {
+export function JsxEditor({ code: initialCode, onChange }: JsxEditorProps) {
   const [code, setCode] = useState(initialCode);
 
   const {
@@ -58,7 +59,9 @@ export function JsxEditor({ code: initialCode }: JsxEditorProps) {
         <EditorPanel
           node={pickedNode}
           onMutate={() => {
-            setCode(astToCode(ast));
+            const next = astToCode(ast);
+            setCode(next);
+            onChange?.(next);
           }}
         />
       </SidebarProvider>
@@ -107,7 +110,7 @@ function EditorPanel({ node, onMutate }: EditorPanelProps) {
               </h3>
               <Textarea
                 value={getText(node)}
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                   setText(node, e.target.value);
                   onMutate?.();
                 }}

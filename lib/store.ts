@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-const STORE_PATH = path.join(process.cwd(), "components.json");
+const STORE_PATH = path.join(process.cwd(), ".components.json");
 
 type ComponentMap = Record<string, string>;
 

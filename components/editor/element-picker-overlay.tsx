@@ -39,10 +39,10 @@ export function ElementPickerOverlay({
     );
 
     const resizeObserver = new ResizeObserver(() => {
-      // TODO: this is causing a weird issue will fix up bit latter
-      setPreviewBound(
-        padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
-      );
+      // TODO: this is causing a weird issue will fix up bit latter. the issue is for unknown reasons the bounds being all zero. i.e. w=h=left=top=0
+      // setPreviewBound(
+      //   padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
+      // );
     });
 
     resizeObserver.observe(interestElement);
@@ -119,16 +119,16 @@ export function ElementPickerOverlay({
           <Button
             aria-pressed={status === "picking"}
             hidden={status === "picking"}
-            size="icon"
+            size="lg"
             variant="outline"
-            className="fixed bottom-4 right-4 z-50 rounded-full shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/70"
+            className="fixed bottom-4 right-4 z-50 rounded-full shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/70 px-4"
             onClick={() => {
               setInterestElement(null);
               setStatus("picking");
             }}
           >
             <EditIcon className="transition-transform duration-150 ease-out group-aria-pressed:rotate-12" />
-            <span className="sr-only">Pick element to edit</span>
+            <span className="text-sm">Edit</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>Pick element</TooltipContent>
@@ -139,7 +139,7 @@ export function ElementPickerOverlay({
         </style>
       )}
       <div
-        hidden={deferredPreviewBound === null || status === "idle"}
+        hidden={deferredPreviewBound === null}
         className={cn(
           "pointer-events-none absolute top-0 left-0 rounded-md ring-2 ring-primary/40 bg-primary/10 transition-[transform,width,height] duration-150 ease-out",
         )}

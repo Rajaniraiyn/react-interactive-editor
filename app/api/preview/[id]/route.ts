@@ -3,9 +3,9 @@ import { getComponent } from "@/lib/store";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const id = params.id;
+  const { id } = await params;
   const value = await getComponent(id);
   if (typeof value === "undefined") {
     return new NextResponse("Not Found", { status: 404 });

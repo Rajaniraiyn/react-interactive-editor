@@ -3,10 +3,10 @@ import { updateComponent } from "@/lib/store";
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const contentType = request.headers.get("content-type") || "";
     let value = "";
     if (contentType.includes("application/json")) {

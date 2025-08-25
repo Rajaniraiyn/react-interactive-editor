@@ -7,12 +7,18 @@ import { createPortal } from "react-dom";
 import { Button } from "./ui/button";
 
 interface ElementPickerProps {
-  targetRef: RefObject<HTMLElement | null>;
+  containerRef: RefObject<HTMLElement | null>;
+  onPick?: (element: HTMLElement) => void;
+  canPick?: (element: HTMLElement) => boolean;
 }
 
-const PREVIEW_PADDING = 8;
+const PREVIEW_PADDING = 6;
 
-export function ElementPicker({ targetRef }: ElementPickerProps) {
+export function ElementPicker({
+  containerRef,
+  onPick,
+  canPick,
+}: ElementPickerProps) {
   const [status, setStatus] = useState<"idle" | "picking" | "picked">("idle");
 
   const [interestElement, setInterestElement] = useState<HTMLElement | null>(
@@ -28,15 +34,13 @@ export function ElementPicker({ targetRef }: ElementPickerProps) {
     }
 
     setPreviewBound(
-      padDocumentRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
+      padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
     );
 
     const resizeObserver = new ResizeObserver(() => {
+      // TODO: this is causing a weird issue will fix up bit latter
       setPreviewBound(
-        padDocumentRect(
-          interestElement.getBoundingClientRect(),
-          PREVIEW_PADDING,
-        ),
+        padDomRect(interestElement.getBoundingClientRect(), PREVIEW_PADDING),
       );
     });
 
@@ -48,7 +52,7 @@ export function ElementPicker({ targetRef }: ElementPickerProps) {
   useEffect(() => {
     if (status !== "picking") return;
 
-    const target = targetRef.current;
+    const target = containerRef.current;
     if (!target) return;
 
     const controller = new AbortController();
@@ -61,7 +65,9 @@ export function ElementPicker({ targetRef }: ElementPickerProps) {
           event.clientY,
         );
         if (elementAtMouse instanceof HTMLElement) {
-          const bounds = elementAtMouse.getBoundingClientRect();
+          if (canPick?.(elementAtMouse) === false) {
+            return;
+          }
           setInterestElement(elementAtMouse);
         }
       },
@@ -76,15 +82,21 @@ export function ElementPicker({ targetRef }: ElementPickerProps) {
           event.clientY,
         );
         if (elementAtMouse instanceof HTMLElement) {
+          if (canPick?.(elementAtMouse) === false) {
+            return;
+          }
           setInterestElement(elementAtMouse);
           setStatus("picked");
+          onPick?.(elementAtMouse);
         }
       },
       { passive: true, signal: controller.signal },
     );
 
     return () => controller.abort();
-  }, [status, targetRef]);
+  }, [status, containerRef]);
+
+  if (typeof window === "undefined") return null;
 
   return createPortal(
     <>
@@ -125,7 +137,8 @@ export function ElementPicker({ targetRef }: ElementPickerProps) {
   );
 }
 
-function padDocumentRect(rect: DOMRect, padding: number): DOMRect {
+function padDomRect(rect: DOMRect, padding: number): DOMRect {
+  rect.width = rect.width + padding * 2;
   return Object.assign({}, rect, {
     width: rect.width + padding * 2,
     height: rect.height + padding * 2,

@@ -1,54 +1,18 @@
 "use client";
 
-import { ElementPicker } from "@/components/element-picker";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { Textarea } from "@/components/ui/textarea";
-import { useDeferredValue, useRef, useState } from "react";
-import JsxParser from "react-jsx-parser";
+import { InteractiveEditor } from "@/components/interactive-editor";
 
 export default function Home() {
-  const [reactCode, setReactCode] = useState(EXAMPLE_REACT_CODE);
-  const deferredReactCode = useDeferredValue(reactCode);
-
-  const previewRef = useRef<HTMLDivElement>(null);
-
   return (
     <div className="w-screen h-screen">
-      <ResizablePanelGroup
-        direction="horizontal"
-        storage={typeof window !== "undefined" ? localStorage : undefined}
-      >
-        <ResizablePanel
-          minSize={20}
-          maxSize={50}
-          defaultSize={20}
-          className="flex flex-col gap-2"
-        >
-          <h2 className="text-lg font-bold">React Code</h2>
-          <Textarea
-            value={reactCode}
-            onChange={(e) => setReactCode(e.target.value)}
-          />
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel>
-          <h2 className="text-lg font-bold">Preview</h2>
-          <div ref={previewRef}>
-            <JsxParser jsx={deferredReactCode} />
-          </div>
-          <ElementPicker targetRef={previewRef} />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <InteractiveEditor code={EXAMPLE_REACT_CODE} />
     </div>
   );
 }
 
 const EXAMPLE_REACT_CODE = `
-<div style={{ padding: "2rem", backgroundColor: "#f0f4f8" }}>
+<div data-edit-id="1" style={{ padding: "2rem", backgroundColor: "#f0f4f8" }}>
+  <div />
   <h1 style={{ color: "#0ea5e9", fontSize: "2.5rem", marginBottom: "1rem" }}>
     Hello, world!
   </h1>

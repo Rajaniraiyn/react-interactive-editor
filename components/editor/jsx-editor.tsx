@@ -52,7 +52,10 @@ export function JsxEditor({ code: initialCode, onChange }: JsxEditorProps) {
   return (
     <>
       <SidebarProvider defaultOpen={false}>
-        <div ref={editableRegionRef} className="relative isolate z-0 h-full w-full">
+        <div
+          ref={editableRegionRef}
+          className="relative isolate z-0 h-full w-full"
+        >
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,theme(colors.muted.DEFAULT)_0%,transparent_60%)]" />
           <JsxParser jsx={processedCode} />
         </div>

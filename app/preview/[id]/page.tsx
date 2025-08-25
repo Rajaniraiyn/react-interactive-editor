@@ -13,7 +13,9 @@ export default function PreviewPage() {
   const router = useRouter();
   const [code, setCode] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
-  const [saving, setSaving] = useState<"idle" | "debouncing" | "saving">("idle");
+  const [saving, setSaving] = useState<"idle" | "debouncing" | "saving">(
+    "idle",
+  );
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -26,24 +28,29 @@ export default function PreviewPage() {
       setLoaded(true);
     }
     if (id) load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   const saveTimer = useRef<number | null>(null);
-  const debouncedSave = useCallback((next: string) => {
-    if (!id) return;
-    if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    setSaving("debouncing");
-    saveTimer.current = window.setTimeout(async () => {
-      setSaving("saving");
-      await fetch(`/api/component/${id}`, {
-        method: "PUT",
-        headers: { "content-type": "text/plain; charset=utf-8" },
-        body: next,
-      });
-      setSaving("idle");
-    }, 300);
-  }, [id]);
+  const debouncedSave = useCallback(
+    (next: string) => {
+      if (!id) return;
+      if (saveTimer.current) window.clearTimeout(saveTimer.current);
+      setSaving("debouncing");
+      saveTimer.current = window.setTimeout(async () => {
+        setSaving("saving");
+        await fetch(`/api/component/${id}`, {
+          method: "PUT",
+          headers: { "content-type": "text/plain; charset=utf-8" },
+          body: next,
+        });
+        setSaving("idle");
+      }, 300);
+    },
+    [id],
+  );
 
   if (!loaded) return null;
 
@@ -69,12 +76,20 @@ export default function PreviewPage() {
             <Share2Icon />
             <span>Share</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => router.push("/") }>
+          <Button variant="outline" size="sm" onClick={() => router.push("/")}>
             <PlusIcon />
             <span>New</span>
           </Button>
-          <Badge variant={copied || saving === "saving" ? "default" : "outline"}>
-            {copied ? "Link copied" : saving === "saving" ? "Saving…" : saving === "debouncing" ? "Pending" : "Saved"}
+          <Badge
+            variant={copied || saving === "saving" ? "default" : "outline"}
+          >
+            {copied
+              ? "Link copied"
+              : saving === "saving"
+                ? "Saving…"
+                : saving === "debouncing"
+                  ? "Pending"
+                  : "Saved"}
           </Badge>
         </div>
       </header>
@@ -84,5 +99,3 @@ export default function PreviewPage() {
     </div>
   );
 }
-
-

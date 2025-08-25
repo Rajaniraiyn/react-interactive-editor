@@ -11,23 +11,26 @@ export default function Home() {
   const [value, setValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const submit = useCallback(async (code: string) => {
-    const trimmed = code.trim();
-    if (!trimmed || submitting) return;
-    try {
-      setSubmitting(true);
-      const res = await fetch("/api/component", {
-        method: "POST",
-        headers: { "content-type": "text/plain; charset=utf-8" },
-        body: trimmed,
-      });
-      if (!res.ok) return;
-      const data = (await res.json()) as { id: string };
-      if (data?.id) router.push(`/preview/${data.id}`);
-    } finally {
-      setSubmitting(false);
-    }
-  }, [router, submitting]);
+  const submit = useCallback(
+    async (code: string) => {
+      const trimmed = code.trim();
+      if (!trimmed || submitting) return;
+      try {
+        setSubmitting(true);
+        const res = await fetch("/api/component", {
+          method: "POST",
+          headers: { "content-type": "text/plain; charset=utf-8" },
+          body: trimmed,
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { id: string };
+        if (data?.id) router.push(`/preview/${data.id}`);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [router, submitting],
+  );
 
   return (
     <div className="w-screen h-screen flex items-center justify-center p-6">
@@ -53,7 +56,9 @@ export default function Home() {
         </div>
         <Textarea
           value={value}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setValue(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setValue(e.target.value)
+          }
           onPaste={async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
             const pasted = e.clipboardData.getData("text/plain");
             if (pasted) {
